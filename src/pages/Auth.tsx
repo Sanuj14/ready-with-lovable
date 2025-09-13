@@ -202,7 +202,7 @@ const Auth = () => {
                     <FormItem>
                       <FormLabel>Role</FormLabel>
                       <FormControl>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select value={field.value} onValueChange={field.onChange}>
                           <SelectTrigger>
                             <div className="flex items-center">
                               <GraduationCap className="h-4 w-4 mr-2 text-muted-foreground" />
