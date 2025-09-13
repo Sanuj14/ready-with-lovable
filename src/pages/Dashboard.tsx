@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,18 +17,74 @@ import {
   Calendar,
   Star
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
-  const userStats = {
-    name: "Alex Chen",
-    role: "Student",
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [userStats, setUserStats] = useState({
+    name: user?.user_metadata?.full_name || "Student",
+    role: user?.user_metadata?.role || "Student",
     level: "Safety Champion",
-    points: 850,
+    points: 0,
     nextLevelPoints: 1000,
-    lessonsCompleted: 12,
-    checklistsFinished: 3,
-    badgesEarned: 5,
+    lessonsCompleted: 0,
+    checklistsFinished: 0,
+    badgesEarned: 0,
     streak: 7
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    fetchUserStats();
+  }, [user, navigate]);
+
+  const fetchUserStats = async () => {
+    try {
+      // Fetch user points
+      const { data: pointsData } = await supabase
+        .from('user_points')
+        .select('total_points')
+        .eq('user_id', user!.id)
+        .single();
+
+      // Fetch completed lessons
+      const { data: progressData } = await supabase
+        .from('user_progress')
+        .select('lesson_id')
+        .eq('user_id', user!.id)
+        .eq('is_completed', true);
+
+      // Fetch completed checklist items  
+      const { data: checklistData } = await supabase
+        .from('user_checklist_progress')
+        .select('checklist_item_id')
+        .eq('user_id', user!.id)
+        .eq('is_completed', true);
+
+      // Fetch earned badges
+      const { data: badgesData } = await supabase
+        .from('user_badges')
+        .select('badge_id')
+        .eq('user_id', user!.id);
+
+      setUserStats(prev => ({
+        ...prev,
+        points: pointsData?.total_points || 0,
+        lessonsCompleted: progressData?.length || 0,
+        checklistsFinished: Math.floor((checklistData?.length || 0) / 10), // Approximate checklists
+        badgesEarned: badgesData?.length || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const recentActivity = [

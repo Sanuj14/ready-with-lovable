@@ -1,10 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Shield, BookOpen, CheckSquare, BarChart3, Menu } from "lucide-react";
+import { Shield, BookOpen, CheckSquare, BarChart3, Menu, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navigation = () => {
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   const navItems = [
     { path: "/", label: "Home", icon: Shield },
@@ -39,6 +41,19 @@ const Navigation = () => {
                 </Link>
               );
             })}
+            
+            {user ? (
+              <Button variant="ghost" onClick={signOut} className="flex items-center space-x-2">
+                <LogOut className="h-4 w-4" />
+                <span>Sign Out</span>
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button variant="default" className="flex items-center space-x-2">
+                  <span>Sign In</span>
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="md:hidden flex items-center">

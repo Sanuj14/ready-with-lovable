@@ -1,15 +1,62 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import DisasterCard from "@/components/DisasterCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Award, Clock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Lessons = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [lessons, setLessons] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    fetchLessons();
+  }, [user, navigate]);
+
+  const fetchLessons = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('is_published', true)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      
+      // Group lessons by disaster type for display
+      const groupedLessons = data.reduce((acc: any, lesson: any) => {
+        if (!acc[lesson.disaster_type]) {
+          acc[lesson.disaster_type] = {
+            type: lesson.disaster_type,
+            lessons: []
+          };
+        }
+        acc[lesson.disaster_type].lessons.push(lesson);
+        return acc;
+      }, {});
+
+      setLessons(Object.values(groupedLessons));
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const disasters = [
     {
       title: "Earthquake Preparedness",
       description: "Learn how to prepare for and respond to earthquakes in your school and community.",
-      type: "earthquake" as const,
+      type: "earthquake",
       lessonCount: 5,
       checklistItems: 12,
       completedBy: 234
@@ -17,7 +64,7 @@ const Lessons = () => {
     {
       title: "Fire Safety & Evacuation",
       description: "Essential fire safety skills and evacuation procedures for students and teachers.",
-      type: "fire" as const,
+      type: "fire",
       lessonCount: 4,
       checklistItems: 8,
       completedBy: 189
@@ -25,7 +72,7 @@ const Lessons = () => {
     {
       title: "Flood Emergency Response", 
       description: "Understanding flood risks and emergency response strategies for your area.",
-      type: "flood" as const,
+      type: "flood",
       lessonCount: 3,
       checklistItems: 10,
       completedBy: 156
@@ -33,7 +80,7 @@ const Lessons = () => {
     {
       title: "Tornado Safety Protocols",
       description: "Tornado awareness and safety protocols for severe weather emergencies.",
-      type: "tornado" as const,
+      type: "tornado",
       lessonCount: 3,
       checklistItems: 7,
       completedBy: 123
@@ -94,14 +141,25 @@ const Lessons = () => {
         </Card>
 
         {/* Disaster Types Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-          {disasters.map((disaster, index) => (
-            <DisasterCard
-              key={index}
-              {...disaster}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-8">Loading lessons...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {disasters.map((disaster, index) => {
+              // Find the first lesson for this disaster type to use its ID
+              const disasterLessons = lessons.find(l => l.type === disaster.type);
+              const firstLessonId = disasterLessons?.lessons[0]?.id;
+              
+              return (
+                <DisasterCard
+                  key={index}
+                  {...disaster}
+                  type={firstLessonId || disaster.type}
+                />
+              );
+            })}
+          </div>
+        )}
 
         {/* Call to Action */}
         <div className="text-center mt-12">

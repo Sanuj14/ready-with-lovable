@@ -11,7 +11,7 @@ import { useState } from "react";
 const Checklists = () => {
   const [completedItems, setCompletedItems] = useState<Record<string, boolean>>({});
 
-  const handleItemToggle = (id: string, completed: boolean) => {
+  const handleToggle = (id: string, completed: boolean) => {
     setCompletedItems(prev => ({
       ...prev,
       [id]: completed
@@ -170,9 +170,10 @@ const Checklists = () => {
                 {earthquakeItems.map((item) => (
                   <ChecklistItem
                     key={item.id}
-                    {...item}
+                    text={item.title}
                     completed={completedItems[item.id]}
-                    onToggle={handleItemToggle}
+                    essential={item.priority === 'high'}
+                    onToggle={(completed) => handleToggle(item.id, completed)}
                   />
                 ))}
               </CardContent>
@@ -201,9 +202,10 @@ const Checklists = () => {
                 {fireItems.map((item) => (
                   <ChecklistItem
                     key={item.id}
-                    {...item}
+                    text={item.title}
                     completed={completedItems[item.id]}
-                    onToggle={handleItemToggle}
+                    essential={item.priority === 'high'}
+                    onToggle={(completed) => handleToggle(item.id, completed)}
                   />
                 ))}
               </CardContent>
