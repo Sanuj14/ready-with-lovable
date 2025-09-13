@@ -196,29 +196,30 @@ const Auth = () => {
                   )}
                 />
                 <FormField
-                  control={signUpForm.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Role</FormLabel>
-                      <FormControl>
-                        <Select value={field.value} onValueChange={field.onChange}>
-                          <SelectTrigger>
-                            <div className="flex items-center">
-                              <GraduationCap className="h-4 w-4 mr-2 text-muted-foreground" />
-                              <SelectValue placeholder="Select your role" />
-                            </div>
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="student">Student</SelectItem>
-                            <SelectItem value="teacher">Teacher</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+  control={signUpForm.control}
+  name="role"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Role</FormLabel>
+      <FormControl>
+        <Select value={field.value} onValueChange={field.onChange}>
+          <SelectTrigger>
+            <div className="flex items-center">
+              <GraduationCap className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Select your role" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="student">Student</SelectItem>
+            <SelectItem value="teacher">Teacher</SelectItem>
+          </SelectContent>
+        </Select>
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? "Creating account..." : "Create Account"}
                 </Button>
